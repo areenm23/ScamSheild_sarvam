@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScamShield Live</title>
+<style>
+  :root {
+    --bg: #05070a; --card: rgba(20, 28, 38, .62); --line: rgba(120, 220, 255, .12);
+    --text: #e6f1f7; --muted: #8aa0ad; --cyan: #22d3ee; --emerald: #10b981;
+    --amber: #f59e0b; --red: #ef4444; --radius: 18px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: radial-gradient(1200px 600px at 10% -10%, #0b2530 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #0a2a1f 0%, transparent 55%), var(--bg);
+    color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Devanagari", sans-serif;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px 120px; }
+  .sim-banner {
+    border: 1px dashed rgba(245, 158, 11, .5); color: #fcd34d; background: rgba(245, 158, 11, .07);
+    padding: 8px 12px; border-radius: 12px; font-size: 13px; margin-bottom: 16px;
+  }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .logo { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--cyan), var(--emerald)); box-shadow: 0 0 30px rgba(34, 211, 238, .35); }
+  h1 { margin: 0; font-size: 26px; letter-spacing: .3px; }
+  .sub { color: var(--muted); margin: 0; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  .card h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); font-weight: 600; }
+  .span2 { grid-column: 1 / -1; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  @media (max-width: 560px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat .k { color: var(--muted); font-size: 12px; } .stat .v { font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #475569; margin-right: 6px; }
+  .dot.on { background: var(--emerald); box-shadow: 0 0 10px var(--emerald); }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-top: 12px; }
+  label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+  select, button { font: inherit; color: var(--text); }
+  select { background: #0d141c; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+  .big { width: 100%; margin-top: 14px; padding: 18px; font-size: 18px; font-weight: 700; border: 0; border-radius: 16px; cursor: pointer;
+    background: linear-gradient(135deg, var(--cyan), var(--emerald)); color: #032018; transition: transform .15s, box-shadow .3s; }
+  .big:hover { transform: translateY(-1px); box-shadow: 0 10px 30px rgba(16, 185, 129, .3); }
+  .big.stop { background: linear-gradient(135deg, #f43f5e, #b91c1c); color: #fff; }
+  .btn { background: #0f1b25; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; cursor: pointer; }
+  .btn:hover { border-color: var(--cyan); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  canvas { width: 100%; height: 64px; display: block; margin-top: 12px; border-radius: 12px; background: rgba(0, 0, 0, .25); }
+  #feed { max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+  .line { padding: 8px 10px; border-radius: 10px; background: rgba(255, 255, 255, .03); }
+  .line.partial { color: var(--muted); font-style: italic; border-left: 2px solid var(--cyan); }
+  .tag { font-size: 11px; color: var(--muted); margin-left: 6px; font-style: normal; }
+  .prov { display: inline-block; font-size: 10.5px; padding: 1px 7px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); margin-right: 6px; text-transform: uppercase; letter-spacing: .6px; }
+  .prov.rules { color: var(--cyan); border-color: rgba(34, 211, 238, .4); }
+  .prov.llm { color: #a78bfa; border-color: rgba(167, 139, 250, .4); }
+  .prov.typed { color: var(--amber); border-color: rgba(245, 158, 11, .5); }
+  .risk { display: flex; gap: 16px; align-items: center; }
+  .gauge { width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 22px;
+    background: conic-gradient(var(--c, var(--emerald)) calc(var(--p, 0) * 1%), rgba(255, 255, 255, .06) 0); transition: --p .5s; position: relative; }
+  .gauge::after { content: ""; position: absolute; inset: 9px; border-radius: 50%; background: #0a1118; }
+  .gauge span { position: relative; z-index: 1; }
+  .lvl { font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+  .lvl.low { color: var(--emerald); } .lvl.medium { color: var(--amber); } .lvl.high { color: var(--red); }
+  .muted { color: var(--muted); font-size: 13px; }
+  .warn { padding: 10px 12px; border-radius: 12px; margin-bottom: 8px; border: 1px solid; animation: pop .35s ease; }
+  .warn.medium { border-color: rgba(245, 158, 11, .45); background: rgba(245, 158, 11, .08); }
+  .warn.high { border-color: rgba(239, 68, 68, .5); background: rgba(239, 68, 68, .09); }
+  .chip { display: inline-block; font-size: 12px; padding: 2px 8px; margin: 4px 4px 0 0; border-radius: 8px; background: rgba(255, 255, 255, .07); }
+  ul.recs { margin: 0; padding-left: 18px; } ul.recs li { margin: 4px 0; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; color: var(--muted); margin: 0; }
+  .typed-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  @keyframes pop { from { transform: translateY(8px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* Simulated floating overlay (Android: WindowManager TYPE_APPLICATION_OVERLAY) */
+  #overlay { position: fixed; right: 16px; bottom: 16px; z-index: 50; display: none; flex-direction: column; align-items: end; gap: 10px; max-width: calc(100vw - 32px); }
+  #bubble { width: 60px; height: 60px; border-radius: 50%; border: 0; cursor: pointer; display: grid; place-items: center;
+    background: var(--emerald); box-shadow: 0 0 0 6px rgba(16, 185, 129, .18), 0 8px 24px rgba(0, 0, 0, .5); transition: background .3s, box-shadow .3s; animation: pop .4s ease; }
+  #bubble.medium { background: var(--amber); box-shadow: 0 0 0 6px rgba(245, 158, 11, .22), 0 8px 24px rgba(0, 0, 0, .5); }
+  #bubble.high { background: var(--red); box-shadow: 0 0 0 8px rgba(239, 68, 68, .25), 0 8px 24px rgba(0, 0, 0, .5); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 14px rgba(239, 68, 68, .08), 0 8px 24px rgba(0, 0, 0, .5); } }
+  #ocard { width: 320px; max-width: 100%; display: none; background: rgba(12, 16, 22, .96); border: 1px solid rgba(239, 68, 68, .45); border-radius: 16px; padding: 14px; animation: pop .3s ease; }
+  #ocard.medium { border-color: rgba(245, 158, 11, .5); }
+  #ocard .t { font-weight: 800; margin-bottom: 4px; }
+  #ocard .acts { display: flex; gap: 8px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="sim-banner">Browser simulation of the ScamShield Android app, running against the same backend.
+    Audio, transcription and analysis are real API calls; the floating bubble imitates the Android overlay.</div>
+  <header>
+    <div class="logo" aria-hidden="true">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#032018" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+    </div>
+    <div><h1>ScamShield Live</h1><p class="sub">Your AI shield against suspicious calls.</p></div>
+  </header>
+
+  <div class="grid">
+    <section class="card span2">
+      <h2>Protection status</h2>
+      <div class="stats">
+        <div class="stat"><div class="k">Status</div><div class="v"><span id="dot" class="dot"></span><span id="st">Inactive</span></div></div>
+        <div class="stat"><div class="k">Audio source</div><div class="v" id="srcv">—</div></div>
+        <div class="stat"><div class="k">Session duration</div><div class="v" id="dur">00:00</div></div>
+        <div class="stat"><div class="k">Detected language</div><div class="v" id="langv">—</div></div>
+      </div>
+      <div class="controls">
+        <label>Audio source
+          <select id="source">
+            <option value="microphone">Microphone (speakerphone call / live voice)</option>
+            <option value="demo:bank_otp">SIMULATED — demo audio: Banking OTP scam</option>
+            <option value="demo:fake_police">SIMULATED — demo audio: Fake police</option>
+            <option value="demo:normal">SIMULATED — demo audio: Normal conversation</option>
+          </select></label>
+        <label>Call language (STT)
+          <select id="sttlang"><option value="auto">Auto-detect</option><option value="hi-IN">Hindi / Hinglish</option><option value="en-IN">English</option></select></label>
+        <label>Warning language
+          <select id="wlang"><option value="en">English</option><option value="hi">हिन्दी</option></select></label>
+        <button class="btn" id="manual" disabled>Analyze now</button>
+      </div>
+      <button class="big" id="toggle">Start Protection</button>
+      <canvas id="wave" width="1000" height="64"></canvas>
+      <div class="muted" id="statusline" style="margin-top:8px"></div>
+    </section>
+
+    <section class="card">
+      <h2>Live transcript <span class="prov">Sarvam saaras:v4</span></h2>
+      <div id="feed"><div class="muted">Start protection to see the live transcript.</div></div>
+    </section>
+
+    <section class="card" id="assessment">
+      <h2>Current risk assessment</h2>
+      <div class="risk">
+        <div class="gauge" id="gauge"><span id="score">0</span></div>
+        <div>
+          <div class="lvl low" id="lvl">No risk indicators</div>
+          <div class="muted" id="lvlsrc">Score is a heuristic indicator, not a probability.</div>
+        </div>
+      </div>
+      <div id="llmbox" style="margin-top:12px"></div>
+    </section>
+
+    <section class="card">
+      <h2>Detected warning signs</h2>
+      <div id="signs"><div class="muted" id="signs-empty">None yet.</div></div>
+    </section>
+
+    <section class="card">
+      <h2>Safety recommendations</h2>
+      <ul class="recs" id="recs">
+        <li>Never share an OTP, UPI PIN, CVV or password — banks and police never ask for them.</li>
+        <li>No real agency performs a "digital arrest" or asks for a "settlement" over the phone.</li>
+        <li>Don't install AnyDesk/TeamViewer or screen-share at a caller's request.</li>
+        <li>Hang up and call back on the official number printed on your card or the bank's website.</li>
+        <li>Report fraud at <b>cybercrime.gov.in</b> or call <b>1930</b>.</li>
+      </ul>
+    </section>
+
+    <section class="card span2">
+      <h2>Typed demo scripts <span class="prov typed">Speech recognition not used</span></h2>
+      <p class="muted" style="margin-top:0">These send the fictional script text straight to the rules engine and Sarvam-105B. No audio, no STT.</p>
+      <div class="typed-row" id="typed"></div>
+      <div id="typedout" style="margin-top:10px"></div>
+    </section>
+
+    <section class="card span2">
+      <h2>Session summary</h2>
+      <div id="summary" class="muted">Appears when protection stops.</div>
+    </section>
+
+    <section class="card span2">
+      <h2>Development metrics (measured)</h2>
+      <pre id="metrics">—</pre>
+    </section>
+  </div>
+</div>
+
+<div id="overlay" aria-live="assertive">
+  <div id="ocard">
+    <div class="t" id="otitle">Possible scam indicators</div>
+    <div id="ophrase" class="chip"></div>
+    <div id="owarn" style="margin-top:8px"></div>
+    <div class="muted" style="margin-top:6px">This is a warning, not proof. You stay in control of the call.</div>
+    <div class="acts"><button class="btn" id="oexplain">View Explanation</button><button class="btn" id="odismiss">Dismiss</button></div>
+  </div>
+  <button id="bubble" title="ScamShield is monitoring" aria-label="ScamShield status">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  </button>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
