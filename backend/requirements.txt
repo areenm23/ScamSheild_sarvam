@@ -1,0 +1,6 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+websockets>=12
+pydantic>=2.6
+sarvamai==0.1.39
+pytest>=8
