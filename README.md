@@ -2,6 +2,10 @@
 
 **A real-time, multilingual AI warning system for phone scams, built on Sarvam AI.**
 
+🔗 **Live demo:** https://scamsheild-sarvam.onrender.com/ (browser client; health check at [`/health`](https://scamsheild-sarvam.onrender.com/health))
+
+> The demo runs on Render's free tier: the first load after it has been idle can take about a minute. Use **Chrome**, allow the microphone, or pick a **SIMULATED** demo source to try it without speaking.
+
 ## What is it?
 
 Phone scams in India follow a script: fake bank calls demanding an OTP, fake police threatening "digital arrest", fake KYC updates, job offers that need a "registration fee". They work because the victim is rushed, scared and alone on the call.
@@ -142,6 +146,10 @@ These are observations from a few runs, not guarantees.
 ---
 
 ## Run it
+
+**Hosted:** https://scamsheild-sarvam.onrender.com/. The Android app can also use this URL as its backend; it switches to `wss://` automatically.
+
+**Locally:**
 
 ```bash
 pip install -r backend/requirements.txt
