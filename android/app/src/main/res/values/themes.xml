@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.ScamShield" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#05070A</item>
+        <item name="android:statusBarColor">#05070A</item>
+        <item name="android:navigationBarColor">#05070A</item>
+    </style>
+</resources>
